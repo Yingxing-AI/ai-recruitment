@@ -5,6 +5,7 @@ import {
   DashboardOutlined,
   FileSearchOutlined,
   ImportOutlined,
+  RobotOutlined,
   SettingOutlined,
   TeamOutlined,
   SolutionOutlined
@@ -21,6 +22,7 @@ const items = [
   { key: '/resume-import', icon: <ImportOutlined />, label: '简历导入' },
   { key: '/applications', icon: <FileSearchOutlined />, label: '招聘流程' },
   { key: '/interviews', icon: <CalendarOutlined />, label: '面试管理' },
+  { key: '/ai-recruitment', icon: <RobotOutlined />, label: 'AI 招聘' },
   { key: '/talent-pool', icon: <TeamOutlined />, label: '人才库' },
   { key: '/settings', icon: <SettingOutlined />, label: '系统设置' }
 ];

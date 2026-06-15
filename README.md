@@ -1,20 +1,6 @@
 # AI 招聘管理系统
 
-AI Recruitment System 是一个开源的 AI 原生招聘管理平台（ATS）。
-
-目标是为中小企业、人力资源团队和招聘机构提供一套可私有化部署、可扩展、支持多模型接入的招聘管理解决方案。
-
-项目聚焦：
-
-- 职位管理
-- 简历管理
-- 人才库建设
-- AI 简历分析
-- AI 人岗匹配
-- 面试流程管理
-- 多模型 AI 集成
-
-长期目标是构建开源版 AI ATS，成为企业招聘数字化基础设施。
+企业内部使用的 AI 招聘管理系统 MVP，支持职位管理、简历导入、候选人管理、AI 简历分析、匹配评分、面试流程管理和人才库沉淀。
 
 ## 技术栈
 
@@ -101,42 +87,42 @@ alembic upgrade head
 
 MVP 开发阶段后端启动时会自动创建表，便于快速验证。
 
-## Roadmap
+## 测试数据
 
-### v0.1 MVP
-- [x] 项目初始化
-- [x] Docker 部署骨架
-- [ ] 用户认证
-- [ ] 职位管理
-- [ ] 候选人管理
-- [ ] 简历上传
+Docker 环境启动后，可执行幂等种子脚本生成职位、候选人、招聘流程记录，并上传一份样例简历到 MinIO：
 
-### v0.2 AI能力
-- [ ] AI 简历解析
-- [ ] AI 候选人评分
-- [ ] AI 人岗匹配
-- [ ] AI 面试建议
+```bash
+docker compose exec backend python -m app.scripts.seed_data
+```
 
-### v0.3 企业能力
-- [ ] 多租户
-- [ ] 权限体系
-- [ ] 数据报表
-- [ ] 通知中心
+简历文件默认写入 `MINIO_BUCKET=resumes`，后端会同步记录到 `files` 和 `resumes` 表。
 
-### v1.0
-- [ ] 企业级 ATS
-- [ ] 多模型支持
-- [ ] MCP 集成
-- [ ] Agent 工作流
+种子脚本也会生成一组规则版 AI 数据：
 
-## Contributing
+- 简历结构化解析结果：姓名、电话、邮箱、教育经历、工作经历、技能、项目经历
+- 候选人摘要、优势、不足和建议面试等级
+- 职位匹配评分、匹配理由、风险点和推荐结论
+- 技术、项目、行为三类面试问题
 
-欢迎提交：
+## AI 招聘能力
 
-- Bug Report
-- Feature Request
-- Pull Request
+当前仅实现规则版能力，不接入真实付费 AI API。前端入口：
 
-开发前请先创建 Issue 讨论需求。
+- `http://localhost:3000/ai-recruitment`
 
-欢迎 AI、HR Tech、ATS 领域开发者参与共建。
+如果本机旧 Docker 容器无法停止导致 3000 仍运行旧前端，可临时使用修复版前端端口：
+
+- `http://localhost:3001/ai-recruitment`
+
+后端 API：
+
+```text
+POST /api/v1/ai/resumes/{resume_id}/parse
+POST /api/v1/ai/resumes/{resume_id}/summary
+POST /api/v1/ai/jobs/{job_id}/candidates/{candidate_id}/match
+POST /api/v1/ai/jobs/{job_id}/candidates/{candidate_id}/interview-questions
+GET  /api/v1/ai/analyses
+GET  /api/v1/ai/matches
+```
+
+上传 PDF / DOCX 简历时，后端会自动提取文本并写入 `resumes.raw_text` 和 `resumes.parsed_json`。后续接入真实模型时，可以在 `backend/app/llm/providers/` 下新增 Provider，并保持当前 AI API 的业务输出结构不变。

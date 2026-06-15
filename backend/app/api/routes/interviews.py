@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+from app.models.application import JobApplication
+from app.models.candidate import Candidate
 from app.models.interview import Interview, InterviewInterviewer
+from app.models.job import Job
 from app.schemas.interview import InterviewCreate, InterviewRead
 
 router = APIRouter()
@@ -16,6 +19,15 @@ def list_interviews(db: Session = Depends(get_db)) -> list[Interview]:
 
 @router.post("", response_model=InterviewRead)
 def create_interview(payload: InterviewCreate, db: Session = Depends(get_db)) -> Interview:
+    application = db.get(JobApplication, payload.application_id)
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if not db.get(Job, payload.job_id):
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not db.get(Candidate, payload.candidate_id):
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    if application.job_id != payload.job_id or application.candidate_id != payload.candidate_id:
+        raise HTTPException(status_code=400, detail="Interview does not match application")
     data = payload.model_dump(exclude={"interviewer_ids"})
     interview = Interview(**data)
     db.add(interview)

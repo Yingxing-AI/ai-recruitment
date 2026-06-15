@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.application import ApplicationStageLog, JobApplication
+from app.models.candidate import Candidate
+from app.models.job import Job
 from app.schemas.application import ApplicationCreate, ApplicationRead, ApplicationStageUpdate
 
 router = APIRouter()
@@ -16,6 +18,10 @@ def list_applications(db: Session = Depends(get_db)) -> list[JobApplication]:
 
 @router.post("", response_model=ApplicationRead)
 def create_application(payload: ApplicationCreate, db: Session = Depends(get_db)) -> JobApplication:
+    if not db.get(Job, payload.job_id):
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not db.get(Candidate, payload.candidate_id):
+        raise HTTPException(status_code=404, detail="Candidate not found")
     application = JobApplication(**payload.model_dump())
     db.add(application)
     db.commit()

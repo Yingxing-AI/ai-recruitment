@@ -8,6 +8,7 @@ import Applications from '../pages/Applications';
 import Interviews from '../pages/Interviews';
 import TalentPool from '../pages/TalentPool';
 import Settings from '../pages/Settings';
+import AiRecruitment from '../pages/AiRecruitment';
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: 'resume-import', element: <ResumeImport /> },
       { path: 'applications', element: <Applications /> },
       { path: 'interviews', element: <Interviews /> },
+      { path: 'ai-recruitment', element: <AiRecruitment /> },
       { path: 'talent-pool', element: <TalentPool /> },
       { path: 'settings', element: <Settings /> }
     ]

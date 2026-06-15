@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./dev.db"
     redis_url: str = "redis://localhost:6379/0"
     upload_dir: str = "./uploads"
+    storage_backend: str = "minio"
+    minio_endpoint_url: str = "http://localhost:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin"
+    minio_bucket: str = "resumes"
+    minio_secure: bool = False
     backend_cors_origins: str = "http://localhost:5173"
     llm_provider: str = "mock"
     llm_model: str = "mock-recruitment"

@@ -63,6 +63,15 @@ body {
   padding: 16px;
 }
 
+.section-panel {
+  margin-top: 16px;
+}
+
+.compact-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
 @media (max-width: 900px) {
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
