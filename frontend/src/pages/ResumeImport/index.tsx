@@ -2,8 +2,10 @@ import { InboxOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Form, Input, Select, Table, Tag, Typography, Upload, message } from 'antd';
 import type { UploadFile } from 'antd';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { fetchMatches } from '../../api/ai';
 import { fetchCandidates } from '../../api/candidates';
+import { fetchJobs } from '../../api/jobs';
 import { fetchResumes, uploadResume } from '../../api/resumes';
 
 export default function ResumeImport() {
@@ -12,6 +14,17 @@ export default function ResumeImport() {
   const queryClient = useQueryClient();
   const { data = [], isLoading } = useQuery({ queryKey: ['resumes'], queryFn: fetchResumes });
   const { data: candidates = [] } = useQuery({ queryKey: ['candidates'], queryFn: fetchCandidates });
+  const { data: jobs = [] } = useQuery({ queryKey: ['jobs'], queryFn: fetchJobs });
+  const { data: matches = [] } = useQuery({ queryKey: ['ai', 'matches'], queryFn: fetchMatches });
+  const latestMatchByCandidate = useMemo(() => {
+    const result = new Map<number, (typeof matches)[number]>();
+    matches.forEach((match) => {
+      if (!result.has(match.candidate_id)) {
+        result.set(match.candidate_id, match);
+      }
+    });
+    return result;
+  }, [matches]);
   const uploadMutation = useMutation({
     mutationFn: uploadResume,
     onSuccess: () => {
@@ -19,6 +32,9 @@ export default function ResumeImport() {
       form.resetFields();
       setFileList([]);
       queryClient.invalidateQueries({ queryKey: ['resumes'] });
+      queryClient.invalidateQueries({ queryKey: ['candidates'] });
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+      queryClient.invalidateQueries({ queryKey: ['ai'] });
     }
   });
 
@@ -40,19 +56,33 @@ export default function ResumeImport() {
             }
             uploadMutation.mutate({
               candidate_id: values.candidate_id,
+              job_id: values.job_id,
               raw_text: values.raw_text,
               file
             });
           }}
         >
-          <Form.Item label="候选人" name="candidate_id" rules={[{ required: true, message: '请选择候选人' }]}>
+          <Form.Item label="候选人" name="candidate_id" extra="可选。留空时系统会按简历中的手机号或邮箱复用候选人，找不到则自动创建。">
             <Select
+              allowClear
               showSearch
               optionFilterProp="label"
-              placeholder="选择候选人"
+              placeholder="选择已有候选人，或留空自动识别"
               options={candidates.map((candidate) => ({
                 label: `${candidate.name}${candidate.current_title ? ` - ${candidate.current_title}` : ''}`,
                 value: candidate.id
+              }))}
+            />
+          </Form.Item>
+          <Form.Item label="关联职位" name="job_id" extra="可选。选择后会自动生成该职位下的应聘记录。">
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="选择目标职位"
+              options={jobs.map((job) => ({
+                label: `${job.title}${job.location ? ` - ${job.location}` : ''}`,
+                value: job.id
               }))}
             />
           </Form.Item>
@@ -84,6 +114,17 @@ export default function ResumeImport() {
           columns={[
             { title: '文件名', dataIndex: 'file_name' },
             { title: '候选人 ID', dataIndex: 'candidate_id', width: 120 },
+            { title: '姓名', width: 120, render: (_, record) => record.parsed_json?.name || '-' },
+            { title: '联系方式', width: 220, render: (_, record) => record.parsed_json?.phone || record.parsed_json?.email || '-' },
+            { title: '当前职位', width: 140, render: (_, record) => record.parsed_json?.current_title || '-' },
+            {
+              title: 'AI 匹配',
+              width: 180,
+              render: (_, record) => {
+                const match = latestMatchByCandidate.get(record.candidate_id);
+                return match ? `${match.total_score ?? '-'} / ${match.level ?? '-'}` : '-';
+              }
+            },
             { title: '大小', dataIndex: 'file_size', width: 120, render: (value) => value ? `${Math.ceil(value / 1024)} KB` : '-' },
             { title: '状态', dataIndex: 'parse_status', width: 120, render: (value) => <Tag>{value}</Tag> },
             { title: '存储路径', dataIndex: 'file_path' },

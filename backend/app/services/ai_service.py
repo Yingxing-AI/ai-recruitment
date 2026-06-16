@@ -1,9 +1,12 @@
 import re
 from typing import Any
 
+from sqlalchemy import select
+
 from app.core.config import settings
 from app.llm.base import LLMProvider
 from app.llm.providers.mock import MockLLMProvider
+from app.models.ai_analysis import AIResumeAnalysis, JobMatchScore
 from app.models.candidate import Candidate
 from app.models.job import Job
 from app.models.resume import Resume
@@ -14,6 +17,91 @@ def get_llm_provider() -> LLMProvider:
     if settings.llm_provider == "mock":
         return MockLLMProvider()
     raise ValueError(f"Unsupported LLM provider: {settings.llm_provider}")
+
+
+def upsert_candidate_analysis(db, candidate: Candidate, resume: Resume) -> AIResumeAnalysis:
+    result = build_candidate_summary(candidate, resume)
+    analysis = get_or_create_analysis(db, resume)
+    analysis.summary = result["summary"]
+    analysis.skills_json = result["skills"]
+    analysis.work_experience_summary = result["work_experience_summary"]
+    analysis.project_experience_summary = result["project_experience_summary"]
+    analysis.education_summary = result["education_summary"]
+    analysis.strengths_json = result["strengths"]
+    analysis.risks_json = result["risks"]
+    analysis.raw_response = result
+    analysis.model_provider = "rules"
+    analysis.model_name = settings.llm_model
+    analysis.status = "completed"
+    analysis.error_message = None
+    return analysis
+
+
+def upsert_job_match(
+    db,
+    job: Job,
+    candidate: Candidate,
+    resume: Resume,
+    application_id: int | None = None,
+) -> JobMatchScore:
+    result = score_job_match(job, candidate, resume)
+    match_score = db.scalar(
+        select(JobMatchScore).where(
+            JobMatchScore.job_id == job.id,
+            JobMatchScore.candidate_id == candidate.id,
+        )
+    )
+    if not match_score:
+        match_score = JobMatchScore(job_id=job.id, candidate_id=candidate.id)
+        db.add(match_score)
+
+    match_score.application_id = application_id
+    match_score.total_score = result["total_score"]
+    match_score.level = result["level"]
+    match_score.dimension_scores_json = result["dimension_scores"]
+    match_score.matched_points_json = result["matched_points"]
+    match_score.missing_points_json = result["missing_points"]
+    match_score.risk_points_json = result["risk_points"]
+    match_score.recommendation = result["recommendation"]
+    match_score.explanation = result["explanation"]
+    match_score.raw_response = result
+    match_score.model_provider = "rules"
+    match_score.model_name = settings.llm_model
+    match_score.status = "completed"
+    match_score.error_message = None
+    return match_score
+
+
+def upsert_interview_questions(
+    db,
+    job: Job,
+    candidate: Candidate,
+    resume: Resume,
+) -> AIResumeAnalysis:
+    questions = generate_interview_questions(job, candidate, resume)
+    analysis = get_or_create_analysis(db, resume)
+    if not analysis.summary:
+        upsert_candidate_analysis(db, candidate, resume)
+    analysis.interview_questions_json = questions
+    analysis.model_provider = "rules"
+    analysis.model_name = settings.llm_model
+    analysis.status = "completed"
+    analysis.error_message = None
+    return analysis
+
+
+def get_or_create_analysis(db, resume: Resume) -> AIResumeAnalysis:
+    analysis = db.scalar(select(AIResumeAnalysis).where(AIResumeAnalysis.resume_id == resume.id))
+    if analysis:
+        return analysis
+    analysis = AIResumeAnalysis(
+        candidate_id=resume.candidate_id,
+        resume_id=resume.id,
+        status="pending",
+    )
+    db.add(analysis)
+    db.flush()
+    return analysis
 
 
 def build_candidate_summary(candidate: Candidate, resume: Resume) -> dict[str, Any]:

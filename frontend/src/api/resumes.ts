@@ -6,9 +6,14 @@ export async function fetchResumes() {
   return data;
 }
 
-export async function uploadResume(payload: { candidate_id: number; file: File; raw_text?: string }) {
+export async function uploadResume(payload: { candidate_id?: number; job_id?: number; file: File; raw_text?: string }) {
   const formData = new FormData();
-  formData.append('candidate_id', String(payload.candidate_id));
+  if (payload.candidate_id) {
+    formData.append('candidate_id', String(payload.candidate_id));
+  }
+  if (payload.job_id) {
+    formData.append('job_id', String(payload.job_id));
+  }
   formData.append('file', payload.file);
   if (payload.raw_text) {
     formData.append('raw_text', payload.raw_text);

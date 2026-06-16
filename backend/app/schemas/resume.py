@@ -13,6 +13,7 @@ class ResumeRead(BaseModel):
     file_type: str | None
     file_size: int | None
     raw_text: str | None
+    parsed_json: dict | None
     parse_status: str
     parse_error: str | None
     created_at: datetime

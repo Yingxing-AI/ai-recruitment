@@ -2,17 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.db.session import get_db
 from app.models.ai_analysis import AIResumeAnalysis, JobMatchScore
+from app.models.application import JobApplication
 from app.models.candidate import Candidate
 from app.models.job import Job
 from app.models.resume import Resume
 from app.schemas.ai import AIResumeAnalysisRead, JobMatchScoreRead, ParsedResumeRead
 from app.services.ai_service import (
-    build_candidate_summary,
-    generate_interview_questions,
-    score_job_match,
+    upsert_candidate_analysis,
+    upsert_interview_questions,
+    upsert_job_match,
 )
 from app.services.resume_parser_service import parse_resume_text
 
@@ -54,20 +54,7 @@ def parse_resume(resume_id: int, db: Session = Depends(get_db)) -> ParsedResumeR
 def summarize_candidate(resume_id: int, db: Session = Depends(get_db)) -> AIResumeAnalysis:
     resume = ensure_parsed_resume(db, resume_id)
     candidate = get_candidate(db, resume.candidate_id)
-    result = build_candidate_summary(candidate, resume)
-    analysis = get_or_create_analysis(db, resume)
-    analysis.summary = result["summary"]
-    analysis.skills_json = result["skills"]
-    analysis.work_experience_summary = result["work_experience_summary"]
-    analysis.project_experience_summary = result["project_experience_summary"]
-    analysis.education_summary = result["education_summary"]
-    analysis.strengths_json = result["strengths"]
-    analysis.risks_json = result["risks"]
-    analysis.raw_response = result
-    analysis.model_provider = "rules"
-    analysis.model_name = settings.llm_model
-    analysis.status = "completed"
-    analysis.error_message = None
+    analysis = upsert_candidate_analysis(db, candidate, resume)
     db.commit()
     db.refresh(analysis)
     return analysis
@@ -81,31 +68,19 @@ def match_candidate(job_id: int, candidate_id: int, db: Session = Depends(get_db
     job = get_job(db, job_id)
     candidate = get_candidate(db, candidate_id)
     resume = get_latest_parsed_resume(db, candidate.id)
-    result = score_job_match(job, candidate, resume)
-
-    match_score = db.scalar(
-        select(JobMatchScore).where(
-            JobMatchScore.job_id == job.id,
-            JobMatchScore.candidate_id == candidate.id,
+    application = db.scalar(
+        select(JobApplication).where(
+            JobApplication.job_id == job.id,
+            JobApplication.candidate_id == candidate.id,
         )
     )
-    if not match_score:
-        match_score = JobMatchScore(job_id=job.id, candidate_id=candidate.id)
-        db.add(match_score)
-
-    match_score.total_score = result["total_score"]
-    match_score.level = result["level"]
-    match_score.dimension_scores_json = result["dimension_scores"]
-    match_score.matched_points_json = result["matched_points"]
-    match_score.missing_points_json = result["missing_points"]
-    match_score.risk_points_json = result["risk_points"]
-    match_score.recommendation = result["recommendation"]
-    match_score.explanation = result["explanation"]
-    match_score.raw_response = result
-    match_score.model_provider = "rules"
-    match_score.model_name = settings.llm_model
-    match_score.status = "completed"
-    match_score.error_message = None
+    match_score = upsert_job_match(
+        db,
+        job,
+        candidate,
+        resume,
+        application_id=application.id if application else None,
+    )
     db.commit()
     db.refresh(match_score)
     return match_score
@@ -123,20 +98,7 @@ def create_interview_questions(
     job = get_job(db, job_id)
     candidate = get_candidate(db, candidate_id)
     resume = get_latest_parsed_resume(db, candidate.id)
-    questions = generate_interview_questions(job, candidate, resume)
-    analysis = get_or_create_analysis(db, resume)
-    if not analysis.summary:
-        result = build_candidate_summary(candidate, resume)
-        analysis.summary = result["summary"]
-        analysis.skills_json = result["skills"]
-        analysis.strengths_json = result["strengths"]
-        analysis.risks_json = result["risks"]
-        analysis.raw_response = result
-    analysis.interview_questions_json = questions
-    analysis.model_provider = "rules"
-    analysis.model_name = settings.llm_model
-    analysis.status = "completed"
-    analysis.error_message = None
+    analysis = upsert_interview_questions(db, job, candidate, resume)
     db.commit()
     db.refresh(analysis)
     return analysis
@@ -213,17 +175,3 @@ def get_job(db: Session, job_id: int) -> Job:
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return job
-
-
-def get_or_create_analysis(db: Session, resume: Resume) -> AIResumeAnalysis:
-    analysis = db.scalar(select(AIResumeAnalysis).where(AIResumeAnalysis.resume_id == resume.id))
-    if analysis:
-        return analysis
-    analysis = AIResumeAnalysis(
-        candidate_id=resume.candidate_id,
-        resume_id=resume.id,
-        status="pending",
-    )
-    db.add(analysis)
-    db.flush()
-    return analysis

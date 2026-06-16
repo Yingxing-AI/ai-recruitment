@@ -43,6 +43,27 @@ SKILL_KEYWORDS = [
     "项目管理",
 ]
 
+TITLE_KEYWORDS = [
+    "后端工程师",
+    "前端工程师",
+    "全栈工程师",
+    "测试工程师",
+    "算法工程师",
+    "数据分析师",
+    "产品经理",
+    "项目经理",
+    "招聘经理",
+    "HRBP",
+    "工程师",
+    "经理",
+    "主管",
+    "总监",
+]
+
+EDUCATION_KEYWORDS = ["博士", "硕士", "研究生", "本科", "大专"]
+CITY_PATTERN = re.compile(r"(?:现居|所在地|所在城市|城市|Location)[:：\s]*([\u4e00-\u9fa5]{2,8}|[A-Z][A-Za-z\s]{1,30})")
+EXPERIENCE_PATTERN = re.compile(r"(\d{1,2})\s*(?:年工作经验|年经验|年以上|年)")
+
 
 def normalize_resume_text(text: str | None) -> str:
     if not text:
@@ -89,6 +110,10 @@ def parse_resume_text(text: str) -> dict[str, Any]:
         "name": extract_name(normalized, lines),
         "phone": extract_first(PHONE_PATTERN, normalized),
         "email": extract_first(EMAIL_PATTERN, normalized),
+        "current_title": extract_current_title(lines),
+        "years_of_experience": extract_years_of_experience(normalized),
+        "highest_education": extract_highest_education(normalized),
+        "current_city": extract_first(CITY_PATTERN, normalized),
         "education": sections.get("education", []),
         "work_experience": sections.get("work_experience", []),
         "skills": skills,
@@ -111,6 +136,28 @@ def extract_name(text: str, lines: list[str]) -> str | None:
         if 2 <= len(stripped) <= 12 and not EMAIL_PATTERN.search(stripped) and not PHONE_PATTERN.search(stripped):
             if re.fullmatch(r"[\u4e00-\u9fa5]{2,4}", stripped):
                 return stripped
+    return None
+
+
+def extract_current_title(lines: list[str]) -> str | None:
+    for line in lines[:20]:
+        for title in TITLE_KEYWORDS:
+            if title in line:
+                return title
+    return None
+
+
+def extract_years_of_experience(text: str) -> int | None:
+    match = EXPERIENCE_PATTERN.search(text)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
+def extract_highest_education(text: str) -> str | None:
+    for keyword in EDUCATION_KEYWORDS:
+        if keyword in text:
+            return keyword
     return None
 
 
