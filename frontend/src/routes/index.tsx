@@ -1,14 +1,16 @@
+import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from '../components/Layout/AppLayout';
-import Dashboard from '../pages/Dashboard';
-import Jobs from '../pages/Jobs';
-import Candidates from '../pages/Candidates';
-import ResumeImport from '../pages/ResumeImport';
-import Applications from '../pages/Applications';
-import Interviews from '../pages/Interviews';
-import TalentPool from '../pages/TalentPool';
-import Settings from '../pages/Settings';
-import AiRecruitment from '../pages/AiRecruitment';
+
+const Dashboard = lazy(() => import('../pages/Dashboard'));
+const Jobs = lazy(() => import('../pages/Jobs'));
+const Candidates = lazy(() => import('../pages/Candidates'));
+const ResumeImport = lazy(() => import('../pages/ResumeImport'));
+const Applications = lazy(() => import('../pages/Applications'));
+const Interviews = lazy(() => import('../pages/Interviews'));
+const TalentPool = lazy(() => import('../pages/TalentPool'));
+const Settings = lazy(() => import('../pages/Settings'));
+const AiRecruitment = lazy(() => import('../pages/AiRecruitment'));
 
 export const router = createBrowserRouter([
   {

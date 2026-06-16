@@ -59,6 +59,26 @@ NGINX_BASE_IMAGE=docker.1panel.live/nginx:1.27-alpine
 - API 文档：http://localhost:8000/docs
 - MinIO 控制台：http://localhost:9001
 
+## 开发验证
+
+后端测试：
+
+```bash
+.venv/bin/python -m pytest backend/app/tests
+```
+
+前端构建：
+
+```bash
+cd frontend
+npm run build
+```
+
+CI 会在 GitHub Actions 中分别执行：
+
+- `cd backend && python -m pip install -e ".[dev]" && python -m pytest app/tests`
+- `cd frontend && npm ci && npm run build`
+
 ## MVP 功能范围
 
 - 用户与角色基础模型
@@ -81,11 +101,17 @@ NGINX_BASE_IMAGE=docker.1panel.live/nginx:1.27-alpine
 
 ```bash
 cd backend
-alembic revision --autogenerate -m "initial schema"
 alembic upgrade head
 ```
 
 MVP 开发阶段后端启动时会自动创建表，便于快速验证。
+
+如果修改了 ORM 模型，生成新迁移：
+
+```bash
+cd backend
+alembic revision --autogenerate -m "describe schema change"
+```
 
 ## 测试数据
 

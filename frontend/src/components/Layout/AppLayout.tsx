@@ -10,7 +10,8 @@ import {
   TeamOutlined,
   SolutionOutlined
 } from '@ant-design/icons';
-import { Layout, Menu, Typography } from 'antd';
+import { Layout, Menu, Spin, Typography } from 'antd';
+import { Suspense } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const { Header, Sider, Content } = Layout;
@@ -46,7 +47,15 @@ export function AppLayout() {
           <Typography.Text strong>企业招聘管理工作台</Typography.Text>
         </Header>
         <Content className="app-content">
-          <Outlet />
+          <Suspense
+            fallback={
+              <div className="route-loading">
+                <Spin />
+              </div>
+            }
+          >
+            <Outlet />
+          </Suspense>
         </Content>
       </Layout>
     </Layout>
