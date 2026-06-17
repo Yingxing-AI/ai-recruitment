@@ -37,12 +37,30 @@ async def upload_resume(
 ) -> Resume:
     suffix = Path(file.filename or "").suffix
     content = await file.read()
-    extracted_text = raw_text or extract_text_from_file(
-        content,
-        file.filename or f"resume{suffix}",
-        file.content_type,
-    )
-    parsed_json = parse_resume_text(extracted_text) if extracted_text else None
+    if not content and not (raw_text and raw_text.strip()):
+        raise HTTPException(status_code=400, detail="Resume file is empty")
+
+    parse_error = None
+    extracted_text = raw_text.strip() if raw_text and raw_text.strip() else None
+    if extracted_text is None:
+        try:
+            extracted_text = extract_text_from_file(
+                content,
+                file.filename or f"resume{suffix}",
+                file.content_type,
+            )
+        except Exception as exc:
+            extracted_text = None
+            parse_error = str(exc) or exc.__class__.__name__
+
+    parsed_json = None
+    if extracted_text:
+        try:
+            parsed_json = parse_resume_text(extracted_text)
+        except Exception as exc:
+            parse_error = str(exc) or exc.__class__.__name__
+
+    parse_status = "parsed" if parsed_json else "failed" if parse_error else "pending"
     candidate = resolve_resume_candidate(
         db=db,
         candidate_id=candidate_id,
@@ -87,7 +105,8 @@ async def upload_resume(
         file_size=len(content),
         raw_text=extracted_text,
         parsed_json=parsed_json,
-        parse_status="parsed" if extracted_text else "pending",
+        parse_status=parse_status,
+        parse_error=parse_error,
     )
     db.add(resume)
     db.flush()

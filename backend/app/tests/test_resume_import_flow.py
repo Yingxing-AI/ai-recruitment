@@ -1,6 +1,11 @@
+import asyncio
+
+import pytest
+from fastapi import HTTPException
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
+import app.api.routes.resumes as resumes_route
 from app.api.routes.resumes import ensure_application, resolve_resume_candidate
 from app.db.base import Base
 from app.models.ai_analysis import AIResumeAnalysis, JobMatchScore
@@ -15,6 +20,29 @@ def make_session() -> Session:
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(bind=engine)
     return sessionmaker(bind=engine)()
+
+
+class FakeUploadFile:
+    def __init__(
+        self,
+        content: bytes,
+        filename: str = "resume.txt",
+        content_type: str = "text/plain",
+    ) -> None:
+        self._content = content
+        self.filename = filename
+        self.content_type = content_type
+
+    async def read(self) -> bytes:
+        return self._content
+
+
+class FakeStorage:
+    def __init__(self) -> None:
+        self.uploads: list[dict] = []
+
+    def upload_bytes(self, **kwargs) -> None:
+        self.uploads.append(kwargs)
 
 
 def test_resolve_resume_candidate_creates_candidate_from_parsed_contacts() -> None:
@@ -124,3 +152,100 @@ def test_upsert_ai_outputs_for_imported_resume_and_job_match() -> None:
     assert match.status == "completed"
     assert match.application_id == application.id
     assert match.total_score is not None
+
+
+def test_upload_resume_rejects_empty_file_without_raw_text() -> None:
+    db = make_session()
+
+    with pytest.raises(HTTPException) as exc_info:
+        asyncio.run(
+            resumes_route.upload_resume(
+                candidate_id=None,
+                job_id=None,
+                raw_text=None,
+                file=FakeUploadFile(b"", filename="empty.txt"),
+                db=db,
+                storage=FakeStorage(),
+            )
+        )
+
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Resume file is empty"
+    assert db.scalars(select(Resume)).all() == []
+
+
+def test_upload_resume_records_parse_error_when_extraction_fails(monkeypatch) -> None:
+    db = make_session()
+    storage = FakeStorage()
+    monkeypatch.setattr(resumes_route.settings, "storage_backend", "minio")
+
+    def raise_parse_error(content: bytes, file_name: str, content_type: str | None = None) -> str:
+        raise ValueError("unsupported resume format")
+
+    monkeypatch.setattr(resumes_route, "extract_text_from_file", raise_parse_error)
+
+    resume = asyncio.run(
+        resumes_route.upload_resume(
+            candidate_id=None,
+            job_id=None,
+            raw_text=None,
+            file=FakeUploadFile(
+                b"not a real pdf",
+                filename="broken.pdf",
+                content_type="application/pdf",
+            ),
+            db=db,
+            storage=storage,
+        )
+    )
+
+    assert resume.parse_status == "failed"
+    assert resume.parse_error == "unsupported resume format"
+    assert resume.raw_text is None
+    assert resume.parsed_json is None
+    assert resume.candidate.name == "broken"
+    assert len(storage.uploads) == 1
+
+
+def test_upload_resume_validates_candidate_reference_before_storage(monkeypatch) -> None:
+    db = make_session()
+    storage = FakeStorage()
+    monkeypatch.setattr(resumes_route.settings, "storage_backend", "minio")
+
+    with pytest.raises(HTTPException) as exc_info:
+        asyncio.run(
+            resumes_route.upload_resume(
+                candidate_id=999,
+                job_id=None,
+                raw_text="张三 zhangsan@example.com Python",
+                file=FakeUploadFile(b"resume content"),
+                db=db,
+                storage=storage,
+            )
+        )
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Candidate not found"
+    assert storage.uploads == []
+
+
+def test_upload_resume_validates_job_reference(monkeypatch) -> None:
+    db = make_session()
+    storage = FakeStorage()
+    monkeypatch.setattr(resumes_route.settings, "storage_backend", "minio")
+
+    with pytest.raises(HTTPException) as exc_info:
+        asyncio.run(
+            resumes_route.upload_resume(
+                candidate_id=None,
+                job_id=999,
+                raw_text="张三 zhangsan@example.com Python",
+                file=FakeUploadFile(b"resume content"),
+                db=db,
+                storage=storage,
+            )
+        )
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Job not found"
+    assert db.scalars(select(JobApplication)).all() == []

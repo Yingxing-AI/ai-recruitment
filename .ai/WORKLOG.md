@@ -38,3 +38,11 @@
 - 最终验证：后端测试 10 passed；前端生产构建通过；Alembic upgrade/downgrade 已用 SQLite 验证。
 - 当前未提交改动包括 `.ai/`、`.github/`、Alembic 迁移、后端测试、README、前端分包配置与路由懒加载。
 - 下一次建议从“简历导入异常场景补测”开始。
+
+## 2026-06-17 12:04
+
+- 读取 `.ai` 全部项目记忆文件，并评估项目档案质量。
+- 补齐 `PROJECT_CONTEXT.md` 中的 AI 招聘系统使命、目标用户、商业目标、MVP 范围和完整技术栈。
+- 加固简历上传接口：空文件返回 400；解析异常写入 `parse_status=failed` 和 `parse_error`，避免请求直接 500。
+- 新增简历导入异常场景测试：空文件、解析失败、候选人不存在、职位不存在。
+- 验证：`.venv/bin/python -m pytest backend/app/tests`，14 passed。
