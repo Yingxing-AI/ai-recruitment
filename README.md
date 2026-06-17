@@ -79,6 +79,15 @@ CI 会在 GitHub Actions 中分别执行：
 - `cd backend && python -m pip install -e ".[dev]" && python -m pytest app/tests`
 - `cd frontend && npm ci && npm run build`
 
+## 开源协作
+
+- 许可证：见 `LICENSE`。
+- 贡献指南：见 `CONTRIBUTING.md`。
+- 安全策略：见 `SECURITY.md`。
+- OSS 准备度检查：见 `docs/OSS_READINESS.md`。
+
+不要提交 `.env`、真实密钥、真实简历、候选人个人信息或内部职位数据。`.env.example` 和 Docker Compose 默认值仅用于本地开发，生产部署前必须替换 `SECRET_KEY`、数据库密码、MinIO 账号密码和 LLM API Key。
+
 ## MVP 功能范围
 
 - 用户与角色基础模型

@@ -46,3 +46,13 @@
 - 加固简历上传接口：空文件返回 400；解析异常写入 `parse_status=failed` 和 `parse_error`，避免请求直接 500。
 - 新增简历导入异常场景测试：空文件、解析失败、候选人不存在、职位不存在。
 - 验证：`.venv/bin/python -m pytest backend/app/tests`，14 passed。
+
+## 2026-06-17 12:35
+
+- 完成 OSS 准备度检查。
+- 新增 `CONTRIBUTING.md`，说明开发环境、提交前检查、代码约定和 MVP 范围控制。
+- 新增 `SECURITY.md`，说明漏洞报告、密钥处理和部署安全边界。
+- 新增 `docs/OSS_READINESS.md`，记录当前开源准备结论、发布前检查、已知缺口和下一步建议。
+- 更新 `.dockerignore`，排除 `.env`、缓存、上传目录等本地敏感或生成内容。
+- 更新 README 开源协作入口，并将 `deploy/docker/backend.env.example` 的 MinIO 示例密钥改为占位符。
+- 验证：`.venv/bin/python -m pytest backend/app/tests`，14 passed；`npm run build` 通过。
