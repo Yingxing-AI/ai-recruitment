@@ -145,3 +145,21 @@
 - `push` = 备份到云端
 - `release` = 发布版本
 - `tag` = 版本标记
+
+<!-- project-copilot:managed:start -->
+## Project Copilot Managed Context
+
+- 普通用户安装命令：`curl -LsSf https://raw.githubusercontent.com/Yingxing-AI/project-copilot/main/install.sh | sh`
+- 安装命令：`pip install -e .`
+- CLI 命令：`project-copilot`
+- 诊断命令：`project-copilot doctor`
+- 版本命令：`project-copilot --version`
+- 测试命令：`pytest -q`（当前基线：unknown）
+- CLI 入口：`project_copilot/cli/main.py`
+- Workflow 入口：`project_copilot/workflow/`
+- Intent 入口：`project_copilot/intent/classifier.py`
+- 项目记忆目录：`.ai/`
+- 自动同步命令：`project-copilot 同步项目状态`
+
+只自动维护本区块；其它协作约定由维护者手动编辑。
+<!-- project-copilot:managed:end -->

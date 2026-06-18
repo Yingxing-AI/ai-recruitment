@@ -16,6 +16,7 @@
 3. 新建一个职位和候选人，确认能进入详情页。
 4. 通过自然语言工作流解析一条指令，确认前端页面能展示结果。
 5. 检查留痕日志是否写入。
+6. 运行实例验证链路，确认简历上传、解析、总结、匹配、面试题和阶段流转可以串起来。
 
 ## Smoke Tests
 
@@ -31,4 +32,11 @@ python -m pytest app/tests/test_deployment_smoke.py
 ```bash
 cd backend
 python -m pytest app/tests
+```
+
+实例验证链路：
+
+```bash
+cd backend
+python -m pytest app/tests/test_instance_verification_chain.py
 ```

@@ -1,11 +1,21 @@
 # Changelog
 
-## Unreleased
+## 2026-06-18
 
-- Added a rule-driven natural language workflow interpreter and AI recruitment UI entry.
-- Added release process guidance and production security baseline documentation.
-- Hardened production settings validation and Nginx security headers.
+### Added
 
-## 0.1.0
+- Phase 4 V1 产品化收口说明。
+- 管理仪表盘汇总接口与前端首页展示。
+- 标准端口与一键启动部署文档。
+- 简历上传、解析、总结、匹配、面试题和状态流转验收用例。
+- 示例职位、候选人、简历、AI 分析结果和面试数据。
 
-- Initial AI recruitment MVP with jobs, candidates, resumes, AI analysis, matching, and interviews.
+### Changed
+
+- 前端首页从静态占位改为动态管理仪表盘。
+- README 改为面向产品交付和演示的说明。
+
+### Notes
+
+- 当前 AI 仍为规则版，不接付费 AI API。
+- 后续接真实 LLM Provider 时优先保持现有业务接口不变。
