@@ -6,6 +6,11 @@ export async function fetchCandidates() {
   return data;
 }
 
+export async function fetchCandidate(candidateId: number) {
+  const { data } = await apiClient.get<Candidate>(`/candidates/${candidateId}`);
+  return data;
+}
+
 export type CandidateCreatePayload = {
   name: string;
   phone?: string;

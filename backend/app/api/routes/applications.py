@@ -7,6 +7,7 @@ from app.models.application import ApplicationStageLog, JobApplication
 from app.models.candidate import Candidate
 from app.models.job import Job
 from app.schemas.application import ApplicationCreate, ApplicationRead, ApplicationStageUpdate
+from app.services.audit_service import log_audit_event
 
 router = APIRouter()
 
@@ -24,6 +25,14 @@ def create_application(payload: ApplicationCreate, db: Session = Depends(get_db)
         raise HTTPException(status_code=404, detail="Candidate not found")
     application = JobApplication(**payload.model_dump())
     db.add(application)
+    db.flush()
+    log_audit_event(
+        db,
+        action="application.create",
+        target_type="application",
+        target_id=application.id,
+        detail=payload.model_dump(),
+    )
     db.commit()
     db.refresh(application)
     return application
@@ -48,6 +57,13 @@ def update_stage(
             reason=payload.reason,
             operator_id=payload.operator_id,
         )
+    )
+    log_audit_event(
+        db,
+        action="application.stage_update",
+        target_type="application",
+        target_id=application.id,
+        detail=payload.model_dump(),
     )
     db.commit()
     db.refresh(application)

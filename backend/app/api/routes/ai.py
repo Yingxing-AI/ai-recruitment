@@ -8,15 +8,44 @@ from app.models.application import JobApplication
 from app.models.candidate import Candidate
 from app.models.job import Job
 from app.models.resume import Resume
-from app.schemas.ai import AIResumeAnalysisRead, JobMatchScoreRead, ParsedResumeRead
+from app.schemas.ai import (
+    AIResumeAnalysisRead,
+    AIWorkflowInterpretRead,
+    AIWorkflowInterpretRequest,
+    JobMatchScoreRead,
+    ParsedResumeRead,
+)
+from app.services.audit_service import log_audit_event
 from app.services.ai_service import (
     upsert_candidate_analysis,
     upsert_interview_questions,
     upsert_job_match,
 )
 from app.services.resume_parser_service import parse_resume_text
+from app.services.workflow_service import interpret_workflow_instruction
 
 router = APIRouter()
+
+
+@router.post("/workflows/interpret", response_model=AIWorkflowInterpretRead)
+def interpret_workflow(
+    payload: AIWorkflowInterpretRequest,
+    db: Session = Depends(get_db),
+) -> AIWorkflowInterpretRead:
+    result = interpret_workflow_instruction(
+        payload.instruction,
+        job_id=payload.job_id,
+        candidate_id=payload.candidate_id,
+        resume_id=payload.resume_id,
+    )
+    log_audit_event(
+        db,
+        action="workflow.interpret",
+        target_type="workflow",
+        detail=result,
+    )
+    db.commit()
+    return AIWorkflowInterpretRead(**result)
 
 
 @router.post("/resumes/{resume_id}/parse", response_model=ParsedResumeRead)
@@ -39,6 +68,13 @@ def parse_resume(resume_id: int, db: Session = Depends(get_db)) -> ParsedResumeR
         if parsed.get("email") and not candidate.email:
             candidate.email = parsed["email"]
 
+    log_audit_event(
+        db,
+        action="resume.parse",
+        target_type="resume",
+        target_id=resume.id,
+        detail={"resume_id": resume.id, "candidate_id": resume.candidate_id},
+    )
     db.commit()
     db.refresh(resume)
     return ParsedResumeRead(
@@ -55,6 +91,13 @@ def summarize_candidate(resume_id: int, db: Session = Depends(get_db)) -> AIResu
     resume = ensure_parsed_resume(db, resume_id)
     candidate = get_candidate(db, resume.candidate_id)
     analysis = upsert_candidate_analysis(db, candidate, resume)
+    log_audit_event(
+        db,
+        action="candidate.summary",
+        target_type="resume",
+        target_id=resume.id,
+        detail={"resume_id": resume.id, "candidate_id": candidate.id},
+    )
     db.commit()
     db.refresh(analysis)
     return analysis
@@ -81,6 +124,13 @@ def match_candidate(job_id: int, candidate_id: int, db: Session = Depends(get_db
         resume,
         application_id=application.id if application else None,
     )
+    log_audit_event(
+        db,
+        action="job.match",
+        target_type="job",
+        target_id=job.id,
+        detail={"job_id": job.id, "candidate_id": candidate.id, "application_id": application.id if application else None},
+    )
     db.commit()
     db.refresh(match_score)
     return match_score
@@ -99,6 +149,13 @@ def create_interview_questions(
     candidate = get_candidate(db, candidate_id)
     resume = get_latest_parsed_resume(db, candidate.id)
     analysis = upsert_interview_questions(db, job, candidate, resume)
+    log_audit_event(
+        db,
+        action="interview.questions",
+        target_type="candidate",
+        target_id=candidate.id,
+        detail={"job_id": job.id, "candidate_id": candidate.id},
+    )
     db.commit()
     db.refresh(analysis)
     return analysis

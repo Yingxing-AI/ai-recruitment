@@ -83,6 +83,9 @@ CI 会在 GitHub Actions 中分别执行：
 
 - 许可证：见 `LICENSE`。
 - 贡献指南：见 `CONTRIBUTING.md`。
+- 发布流程：见 `docs/RELEASE.md`。
+- 数据留存策略：见 `docs/DATA_RETENTION.md`。
+- 部署验证：见 `docs/DEPLOYMENT_VERIFICATION.md`。
 - 安全策略：见 `SECURITY.md`。
 - OSS 准备度检查：见 `docs/OSS_READINESS.md`。
 
@@ -161,3 +164,9 @@ GET  /api/v1/ai/matches
 ```
 
 上传 PDF / DOCX 简历时，后端会自动提取文本并写入 `resumes.raw_text` 和 `resumes.parsed_json`。后续接入真实模型时，可以在 `backend/app/llm/providers/` 下新增 Provider，并保持当前 AI API 的业务输出结构不变。
+
+## 发布与安全
+
+- 发布前先跑后端测试和前端构建。
+- 发布时更新 `CHANGELOG.md`，必要时打版本 tag。
+- 生产环境请遵守 `docs/PRODUCTION_SECURITY.md` 中的最低安全基线。

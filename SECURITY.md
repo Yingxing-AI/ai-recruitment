@@ -21,9 +21,12 @@
 - `.env.example` 和 `deploy/docker/*.env.example` 只允许放示例值。
 - Docker Compose 中的默认密码仅用于本地开发，生产部署必须通过环境变量替换。
 - 生产环境必须替换 `SECRET_KEY`、数据库密码、MinIO 账号密码，并收紧 CORS 来源。
+- 生产环境启动时，后端会拒绝默认占位 `SECRET_KEY`、SQLite 数据库地址和未替换的 MinIO 凭据。
+- 数据留存策略见 `docs/DATA_RETENTION.md`。
 
 ## Deployment Notes
 
 - 默认配置面向本地开发，不应直接暴露到公网。
 - 上传的简历可能包含个人敏感信息，生产环境需要配置访问控制、存储加密、备份策略和日志脱敏。
 - 接入真实 LLM Provider 时，不要把简历原文、API Key 或模型响应写入公开日志。
+- 更完整的生产安全基线见 `docs/PRODUCTION_SECURITY.md`。

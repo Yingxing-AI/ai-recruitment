@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.job import Job
 from app.schemas.job import JobCreate, JobRead, JobUpdate
+from app.services.audit_service import log_audit_event
 
 router = APIRouter()
 
@@ -24,6 +25,8 @@ def list_jobs(
 def create_job(payload: JobCreate, db: Session = Depends(get_db)) -> Job:
     job = Job(**payload.model_dump())
     db.add(job)
+    db.flush()
+    log_audit_event(db, action="job.create", target_type="job", target_id=job.id, detail=payload.model_dump())
     db.commit()
     db.refresh(job)
     return job
@@ -42,8 +45,16 @@ def update_job(job_id: int, payload: JobUpdate, db: Session = Depends(get_db)) -
     job = db.get(Job, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    before = job.status
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(job, key, value)
+    log_audit_event(
+        db,
+        action="job.update",
+        target_type="job",
+        target_id=job.id,
+        detail={"before_status": before, "payload": payload.model_dump(exclude_unset=True)},
+    )
     db.commit()
     db.refresh(job)
     return job

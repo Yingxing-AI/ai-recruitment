@@ -1,4 +1,6 @@
-from pydantic import computed_field
+from __future__ import annotations
+
+from pydantic import computed_field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,6 +30,30 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [item.strip() for item in self.backend_cors_origins.split(",") if item.strip()]
+
+    @model_validator(mode="after")
+    def validate_production_settings(self) -> "Settings":
+        if self.environment.lower() != "production":
+            return self
+
+        if self.secret_key in {"change-me", "change-me-in-production"} or len(self.secret_key) < 32:
+            raise ValueError("SECRET_KEY must be at least 32 characters in production")
+
+        if self.database_url.startswith("sqlite"):
+            raise ValueError("DATABASE_URL must not use SQLite in production")
+
+        if not self.cors_origins:
+            raise ValueError("BACKEND_CORS_ORIGINS must not be empty in production")
+
+        if any(origin == "*" for origin in self.cors_origins):
+            raise ValueError("BACKEND_CORS_ORIGINS must not allow wildcard origins in production")
+
+        if self.storage_backend == "minio":
+            invalid_minio_values = {"minioadmin", "replace-with-minio-access-key", "replace-with-minio-secret-key"}
+            if self.minio_access_key in invalid_minio_values or self.minio_secret_key in invalid_minio_values:
+                raise ValueError("MinIO credentials must be replaced in production")
+
+        return self
 
 
 settings = Settings()

@@ -1,5 +1,12 @@
 import { apiClient } from './client';
-import type { AIResumeAnalysis, JobMatchScore, ParsedResumeResult } from '../types/ai';
+import type {
+  AuditLog,
+  AIResumeAnalysis,
+  JobMatchScore,
+  ParsedResumeResult,
+  WorkflowInterpretRequest,
+  WorkflowInterpretResult
+} from '../types/ai';
 
 export async function parseResume(resumeId: number) {
   const { data } = await apiClient.post<ParsedResumeResult>(`/ai/resumes/${resumeId}/parse`);
@@ -30,7 +37,39 @@ export async function fetchAnalyses() {
   return data;
 }
 
+export async function fetchAnalysesByCandidate(candidateId: number) {
+  const { data } = await apiClient.get<AIResumeAnalysis[]>('/ai/analyses', { params: { candidate_id: candidateId } });
+  return data;
+}
+
 export async function fetchMatches() {
   const { data } = await apiClient.get<JobMatchScore[]>('/ai/matches');
+  return data;
+}
+
+export async function fetchMatchesByFilters(params?: { jobId?: number; candidateId?: number }) {
+  const { data } = await apiClient.get<JobMatchScore[]>('/ai/matches', {
+    params: {
+      job_id: params?.jobId,
+      candidate_id: params?.candidateId
+    }
+  });
+  return data;
+}
+
+export async function interpretWorkflow(payload: WorkflowInterpretRequest) {
+  const { data } = await apiClient.post<WorkflowInterpretResult>('/ai/workflows/interpret', payload);
+  return data;
+}
+
+export async function fetchAuditLogs(params?: { targetType?: string; targetId?: number; action?: string; limit?: number }) {
+  const { data } = await apiClient.get<AuditLog[]>('/audit-logs', {
+    params: {
+      target_type: params?.targetType,
+      target_id: params?.targetId,
+      action: params?.action,
+      limit: params?.limit
+    }
+  });
   return data;
 }

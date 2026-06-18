@@ -6,6 +6,42 @@ export interface ParsedResumeResult {
   parse_status: string;
 }
 
+export interface AuditLog {
+  id: number;
+  user_id?: number | null;
+  action: string;
+  target_type?: string | null;
+  target_id?: number | null;
+  detail_json?: Record<string, unknown> | null;
+  ip_address?: string | null;
+  user_agent?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkflowInterpretRequest {
+  instruction: string;
+  job_id?: number;
+  candidate_id?: number;
+  resume_id?: number;
+}
+
+export interface WorkflowInterpretResult {
+  instruction: string;
+  intent: string;
+  confidence: number;
+  matched_keywords: string[];
+  required_inputs: string[];
+  missing_inputs: string[];
+  recommended_action: string;
+  suggested_steps: string[];
+  execution_hint: string;
+  can_execute: boolean;
+  job_id?: number | null;
+  candidate_id?: number | null;
+  resume_id?: number | null;
+}
+
 export interface AIResumeAnalysis {
   id: number;
   candidate_id: number;

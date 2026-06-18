@@ -42,7 +42,15 @@ export default function Candidates() {
             { title: '经验', dataIndex: 'years_of_experience', render: (value) => value ? `${value} 年` : '-' },
             { title: '来源', dataIndex: 'source', render: (value) => value ? <Tag>{value}</Tag> : '-' },
             { title: '状态', dataIndex: 'status' },
-            { title: '操作', render: () => <Space><Button type="link">详情</Button><Button type="link">AI 分析</Button></Space> }
+            {
+              title: '操作',
+              render: (_, record) => (
+                <Space>
+                  <Button type="link" onClick={() => navigate(`/candidates/${record.id}`)}>详情</Button>
+                  <Button type="link" onClick={() => navigate('/ai-recruitment')}>AI 分析</Button>
+                </Space>
+              )
+            }
           ]}
         />
       </div>

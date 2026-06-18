@@ -1,10 +1,11 @@
 import { ExperimentOutlined, FileSearchOutlined, QuestionCircleOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Col, Descriptions, Form, List, Row, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd';
+import { Button, Card, Col, Descriptions, Form, Input, List, Row, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd';
 import { useMemo, useState } from 'react';
 import {
   fetchAnalyses,
   fetchMatches,
+  interpretWorkflow,
   generateInterviewQuestions,
   matchCandidate,
   parseResume,
@@ -13,6 +14,7 @@ import {
 import { fetchCandidates } from '../../api/candidates';
 import { fetchJobs } from '../../api/jobs';
 import { fetchResumes } from '../../api/resumes';
+import type { WorkflowInterpretResult } from '../../types/ai';
 
 const questionTypeLabel: Record<string, string> = {
   technical: '技术',
@@ -25,6 +27,8 @@ export default function AiRecruitment() {
   const [selectedResumeId, setSelectedResumeId] = useState<number>();
   const [selectedJobId, setSelectedJobId] = useState<number>();
   const [selectedCandidateId, setSelectedCandidateId] = useState<number>();
+  const [workflowInstruction, setWorkflowInstruction] = useState('帮我解析这份简历并生成候选人总结');
+  const [workflowResult, setWorkflowResult] = useState<WorkflowInterpretResult>();
   const { data: resumes = [] } = useQuery({ queryKey: ['resumes'], queryFn: fetchResumes });
   const { data: candidates = [] } = useQuery({ queryKey: ['candidates'], queryFn: fetchCandidates });
   const { data: jobs = [] } = useQuery({ queryKey: ['jobs'], queryFn: fetchJobs });
@@ -67,6 +71,13 @@ export default function AiRecruitment() {
       refreshAi();
     }
   });
+  const workflowMutation = useMutation({
+    mutationFn: interpretWorkflow,
+    onSuccess: (result) => {
+      setWorkflowResult(result);
+      message.success('工作流已解析');
+    }
+  });
 
   const resumeOptions = resumes.map((resume) => ({
     value: resume.id,
@@ -77,6 +88,49 @@ export default function AiRecruitment() {
     label: `${candidate.name}${candidate.current_title ? ` - ${candidate.current_title}` : ''}`
   }));
   const jobOptions = jobs.map((job) => ({ value: job.id, label: job.title }));
+  const executeWorkflow = () => {
+    if (!workflowResult) {
+      message.warning('请先解析工作流');
+      return;
+    }
+    if (!workflowResult.can_execute) {
+      message.warning(workflowResult.execution_hint);
+      return;
+    }
+
+    switch (workflowResult.intent) {
+      case 'resume_parse':
+        if (!selectedResumeId) {
+          message.warning('请先选择简历');
+          return;
+        }
+        parseMutation.mutate(selectedResumeId);
+        return;
+      case 'candidate_summary':
+        if (!selectedResumeId) {
+          message.warning('请先选择简历');
+          return;
+        }
+        summaryMutation.mutate(selectedResumeId);
+        return;
+      case 'job_match':
+        if (!selectedJobId || !selectedCandidateId) {
+          message.warning('请先选择职位和候选人');
+          return;
+        }
+        matchMutation.mutate({ jobId: selectedJobId, candidateId: selectedCandidateId });
+        return;
+      case 'interview_questions':
+        if (!selectedJobId || !selectedCandidateId) {
+          message.warning('请先选择职位和候选人');
+          return;
+        }
+        questionMutation.mutate({ jobId: selectedJobId, candidateId: selectedCandidateId });
+        return;
+      default:
+        message.warning('当前工作流暂不支持自动执行');
+    }
+  };
 
   return (
     <>
@@ -86,6 +140,93 @@ export default function AiRecruitment() {
       </div>
       <Tabs
         items={[
+          {
+            key: 'workflow',
+            label: '自然语言工作流',
+            children: (
+              <Row gutter={16}>
+                <Col xs={24} lg={10}>
+                  <div className="panel">
+                    <Typography.Title level={4}>输入自然语言指令</Typography.Title>
+                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                      <Input.TextArea
+                        rows={5}
+                        value={workflowInstruction}
+                        onChange={(event) => setWorkflowInstruction(event.target.value)}
+                        placeholder="例如：帮我解析这份简历并生成候选人总结"
+                      />
+                      <Select
+                        allowClear
+                        showSearch
+                        optionFilterProp="label"
+                        placeholder="可选：简历"
+                        value={selectedResumeId}
+                        onChange={setSelectedResumeId}
+                        options={resumeOptions}
+                      />
+                      <Select
+                        allowClear
+                        showSearch
+                        optionFilterProp="label"
+                        placeholder="可选：职位"
+                        value={selectedJobId}
+                        onChange={setSelectedJobId}
+                        options={jobOptions}
+                      />
+                      <Select
+                        allowClear
+                        showSearch
+                        optionFilterProp="label"
+                        placeholder="可选：候选人"
+                        value={selectedCandidateId}
+                        onChange={setSelectedCandidateId}
+                        options={candidateOptions}
+                      />
+                      <Space>
+                        <Button
+                          type="primary"
+                          onClick={() =>
+                            workflowMutation.mutate({
+                              instruction: workflowInstruction,
+                              resume_id: selectedResumeId,
+                              job_id: selectedJobId,
+                              candidate_id: selectedCandidateId
+                            })
+                          }
+                          loading={workflowMutation.isPending}
+                        >
+                          解析工作流
+                        </Button>
+                        <Button onClick={executeWorkflow} disabled={!workflowResult}>
+                          执行建议动作
+                        </Button>
+                      </Space>
+                    </Space>
+                  </div>
+                </Col>
+                <Col xs={24} lg={14}>
+                  <div className="panel">
+                    <Typography.Title level={4}>解析结果</Typography.Title>
+                    {workflowResult ? (
+                      <Descriptions column={1} bordered size="small">
+                        <Descriptions.Item label="意图">
+                          <Tag color={workflowResult.intent === 'unknown' ? 'default' : 'green'}>{workflowResult.intent}</Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="置信度">{workflowResult.confidence}</Descriptions.Item>
+                        <Descriptions.Item label="推荐动作">{workflowResult.recommended_action}</Descriptions.Item>
+                        <Descriptions.Item label="执行提示">{workflowResult.execution_hint}</Descriptions.Item>
+                        <Descriptions.Item label="匹配关键词">{renderTags(workflowResult.matched_keywords)}</Descriptions.Item>
+                        <Descriptions.Item label="缺失输入">{renderTags(workflowResult.missing_inputs)}</Descriptions.Item>
+                        <Descriptions.Item label="建议步骤">{renderList(workflowResult.suggested_steps)}</Descriptions.Item>
+                      </Descriptions>
+                    ) : (
+                      <Typography.Text type="secondary">输入指令后可获得工作流解析</Typography.Text>
+                    )}
+                  </div>
+                </Col>
+              </Row>
+            )
+          },
           {
             key: 'resume',
             label: '简历解析与总结',

@@ -8,6 +8,7 @@ from app.models.candidate import Candidate
 from app.models.interview import Interview, InterviewInterviewer
 from app.models.job import Job
 from app.schemas.interview import InterviewCreate, InterviewRead
+from app.services.audit_service import log_audit_event
 
 router = APIRouter()
 
@@ -34,6 +35,13 @@ def create_interview(payload: InterviewCreate, db: Session = Depends(get_db)) ->
     db.flush()
     for user_id in payload.interviewer_ids:
         db.add(InterviewInterviewer(interview_id=interview.id, user_id=user_id))
+    log_audit_event(
+        db,
+        action="interview.create",
+        target_type="interview",
+        target_id=interview.id,
+        detail=payload.model_dump(),
+    )
     db.commit()
     db.refresh(interview)
     return interview

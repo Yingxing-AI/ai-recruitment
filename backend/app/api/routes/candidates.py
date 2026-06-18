@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.candidate import Candidate, CandidateTag
 from app.schemas.candidate import CandidateCreate, CandidateRead, CandidateUpdate
+from app.services.audit_service import log_audit_event
 
 router = APIRouter()
 
@@ -36,6 +37,13 @@ def create_candidate(payload: CandidateCreate, db: Session = Depends(get_db)) ->
     db.flush()
     for tag in payload.tags:
         db.add(CandidateTag(candidate_id=candidate.id, tag=tag))
+    log_audit_event(
+        db,
+        action="candidate.create",
+        target_type="candidate",
+        target_id=candidate.id,
+        detail=payload.model_dump(),
+    )
     db.commit()
     db.refresh(candidate)
     return candidate
@@ -58,8 +66,16 @@ def update_candidate(
     candidate = db.get(Candidate, candidate_id)
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
+    before = candidate.status
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(candidate, key, value)
+    log_audit_event(
+        db,
+        action="candidate.update",
+        target_type="candidate",
+        target_id=candidate.id,
+        detail={"before_status": before, "payload": payload.model_dump(exclude_unset=True)},
+    )
     db.commit()
     db.refresh(candidate)
     return candidate

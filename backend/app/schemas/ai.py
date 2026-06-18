@@ -13,6 +13,29 @@ class ParsedResumeRead(BaseModel):
     parse_status: str
 
 
+class AIWorkflowInterpretRequest(BaseModel):
+    instruction: str
+    job_id: int | None = None
+    candidate_id: int | None = None
+    resume_id: int | None = None
+
+
+class AIWorkflowInterpretRead(BaseModel):
+    instruction: str
+    intent: str
+    confidence: float
+    matched_keywords: list[str]
+    required_inputs: list[str]
+    missing_inputs: list[str]
+    recommended_action: str
+    suggested_steps: list[str]
+    execution_hint: str
+    can_execute: bool
+    job_id: int | None
+    candidate_id: int | None
+    resume_id: int | None
+
+
 class AIResumeAnalysisRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

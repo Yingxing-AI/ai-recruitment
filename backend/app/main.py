@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import ai, applications, auth, candidates, health, interviews, jobs, resumes
+from app.api.routes import ai, applications, audit, auth, candidates, health, interviews, jobs, resumes
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
     app.include_router(applications.router, prefix="/api/v1/applications", tags=["applications"])
     app.include_router(interviews.router, prefix="/api/v1/interviews", tags=["interviews"])
     app.include_router(ai.router, prefix="/api/v1/ai", tags=["ai"])
+    app.include_router(audit.router, prefix="/api/v1/audit-logs", tags=["audit-logs"])
 
     @app.on_event("startup")
     def on_startup() -> None:

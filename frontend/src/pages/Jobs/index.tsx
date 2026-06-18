@@ -2,6 +2,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, Typography, message } from 'antd';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createJob, fetchJobs } from '../../api/jobs';
 
 const statusMap: Record<string, string> = {
@@ -14,6 +15,7 @@ const statusMap: Record<string, string> = {
 export default function Jobs() {
   const [form] = Form.useForm();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data = [], isLoading } = useQuery({ queryKey: ['jobs'], queryFn: fetchJobs });
   const createMutation = useMutation({
@@ -43,7 +45,15 @@ export default function Jobs() {
             { title: '人数', dataIndex: 'headcount', width: 90 },
             { title: '状态', dataIndex: 'status', render: (status) => <Tag>{statusMap[status] ?? status}</Tag> },
             { title: '更新时间', dataIndex: 'updated_at', render: (value) => new Date(value).toLocaleString() },
-            { title: '操作', render: () => <Space><Button type="link">详情</Button><Button type="link">匹配</Button></Space> }
+            {
+              title: '操作',
+              render: (_, record) => (
+                <Space>
+                  <Button type="link" onClick={() => navigate(`/jobs/${record.id}`)}>详情</Button>
+                  <Button type="link" onClick={() => navigate('/ai-recruitment')}>匹配</Button>
+                </Space>
+              )
+            }
           ]}
         />
       </div>

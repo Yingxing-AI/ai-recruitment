@@ -6,6 +6,11 @@ export async function fetchJobs() {
   return data;
 }
 
+export async function fetchJob(jobId: number) {
+  const { data } = await apiClient.get<Job>(`/jobs/${jobId}`);
+  return data;
+}
+
 export type JobCreatePayload = {
   title: string;
   location?: string;
