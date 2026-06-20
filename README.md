@@ -61,22 +61,20 @@ npm run build
 后端代码检查：
 
 ```bash
-cd backend
-ruff check .
+make lint-backend
 ```
 
 后端测试：
 
 ```bash
-cd backend
-pytest
+make test
 ```
 
 实例验证链路：
 
 ```bash
 cd backend
-pytest app/tests/test_instance_verification_chain.py
+./.venv/bin/python -m pytest -q app/tests/test_instance_verification_chain.py
 ```
 
 ## API 文档

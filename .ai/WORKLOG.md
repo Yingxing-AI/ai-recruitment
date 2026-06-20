@@ -1,5 +1,7 @@
 # Worklog
 
+说明：legacy worklog compatibility。Session Memory 模式下，普通开发流水不再自动写入；重要会话摘要归档到 `.ai/sessions/archive/`，本文件保留历史记录和迁移前后兼容摘要。
+
 ## 2026-06-16 11:24
 
 - 已更新项目状态。
@@ -122,3 +124,15 @@
 - 同步项目状态：确认仓库最新代码已包含仪表盘、实例验证链路和 10 条虚拟实例扩容。
 - 当前运行提示：如果 `http://localhost:3000/` 没变化，优先重新构建并重启 Docker Compose，再强制刷新浏览器。
 - 明日计划：保持稳定维护，等待下一优先级需求。
+
+## 2026-06-18 20:25
+
+- 今日工作收尾：Phase 4 V1 产品化、实例验证链路和 10 条虚拟实例扩容均已完成并提交。
+- 遇到问题：无新增问题。
+- 明日计划：从稳定维护状态继续，若有新需求再进入下一优先级。
+
+## 2026-06-20 20:35
+
+- 完成内容：将 `.ai` 记忆层从 beta.1 风格迁移到 `Project Copilot v0.3.0-beta.3` 风格，新增 `PROJECT_CHARTER.md`、`adr/`、`sessions/` 和 `derived/metrics.json`，并更新 `AGENTS.md` 与 `docs/CODEX_WORKFLOW.md` 为 Session Memory 规则。
+- 遇到问题：旧 `.ai/STATUS.md` 存在明显上下文漂移，需要在迁移中同时收敛为招聘项目自身的真实恢复卡片；旧 `WORKLOG.md` 与 `history/` 是流水账，不能直接机械复制到 Session Archive。
+- 明日计划：后续开发时只读恢复上下文，收工时仅把三个月后仍重要的候选事件写入长期记忆。

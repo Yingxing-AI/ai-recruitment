@@ -1,5 +1,15 @@
 # Decisions
 
+说明：旧版决策索引。新决策优先写入 `.ai/adr/`，本文件只保留兼容摘要。
+
+## 兼容索引
+
+- [ADR 0001: MVP 使用规则驱动，不依赖外部 AI API](adr/0001-rule-driven-mvp.md)
+- [ADR 0002: Phase 4 聚焦 V1 产品化收口](adr/0002-phase-4-v1-productization.md)
+- [ADR 0003: 项目记忆层迁移到 Project Copilot v0.3.0-beta.3 架构](adr/0003-memory-architecture-migration-beta3.md)
+
+## Legacy 决策摘录
+
 ## ADR-0001: v0.1 使用规则驱动
 
 原因：MVP 不依赖外部 API，优先保证本地可运行。
@@ -13,3 +23,11 @@
 原因：核心招聘闭环和规则版 AI 已经可用，当前最需要的是稳定性、可演示性和交付文档，而不是继续扩展 AI 能力。
 
 影响：后续开发优先级转向产品化收口；真实 LLM Provider 接入继续后置，除非另行确认。
+
+日期：2026-06-20
+
+决策：项目记忆层迁移到 Project Copilot v0.3.0-beta.3 架构。
+
+原因：现有 `.ai` 仍停留在 beta.1 风格，缺少 `PROJECT_CHARTER`、`ADR`、`Session Archive` 和 `derived metrics` 分层，已影响上下文恢复与验证治理口径。
+
+影响：后续新决策优先写入 `.ai/adr/`；`WORKLOG.md`、`HYPOTHESES.md` 和 `metrics.md` 只保留为 Legacy/Compatibility，不再作为主写入面。

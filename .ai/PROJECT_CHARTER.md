@@ -1,6 +1,4 @@
-# Project Context
-
-说明：legacy charter compatibility。`PROJECT_CHARTER.md` 已成为当前主边界文件；本文件保留旧版兼容读取，不再作为主写入面。
+# Project Charter
 
 项目名称：ai-recruitment
 
@@ -25,6 +23,12 @@ MVP 范围：
 - 应聘流程、阶段日志、面试安排与反馈
 - Docker Compose 部署骨架和基础 CI 验证
 
+非目标：
+- 当前版本不以真实外部 LLM Provider 为默认依赖；真实 Provider 接入保持后置
+- 不做面向候选人的公开招聘门户或多租户 SaaS 平台
+- 不扩展到薪酬、考勤、绩效等完整 HR 套件
+- 不让 Project Copilot 记忆层替代业务交付、代码实现或版本发布流程
+
 技术栈：
 - 前端：React + TypeScript + Vite + Ant Design
 - 后端：FastAPI + SQLAlchemy + Alembic + Pydantic
@@ -34,13 +38,4 @@ MVP 范围：
 - 部署：Docker Compose + Nginx
 - AI：统一 LLM Provider 抽象，当前默认 mock/规则驱动
 
-说明：这里记录长期稳定背景，极少修改；不要写临时状态。
-
-现有线索：
-- docker-compose.yml
-- backend/
-- frontend/
-- docs/
-- README.md
-- LICENSE
-- AGENTS.md
+说明：这里记录长期稳定边界，极少修改；不要写临时状态。

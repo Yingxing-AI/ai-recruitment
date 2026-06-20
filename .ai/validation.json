@@ -1,13 +1,49 @@
 {
   "project_name": "ai-recruitment",
-  "started_at": "2026-06-17",
-  "status": "可持续开发",
-  "usage_days": 1,
-  "worklog_count": 17,
-  "decision_count": 0,
-  "knowledge_count": 11,
-  "project_health": 92,
+  "started_at": "2026-06-18",
+  "status": "记忆层迁移完成，进入稳定维护",
+  "usage_days": 2,
+  "worklog_count": 18,
+  "decision_count": 3,
+  "knowledge_count": 12,
+  "adr_count": 3,
+  "session_archive_count": 4,
+  "active_candidate_count": 0,
+  "charter_present": true,
+  "roadmap_present": true,
+  "memory_health_status": "需要收敛记忆漂移",
+  "readme_drift_status": "存在漂移",
+  "readme_drift_issues": [
+    "README 缺少 Memory Health 能力说明，当前 `check_project` 已不再输出旧版项目健康卡。",
+    "README 尚未说明 README Drift Check，无法反映 P2 的文档漂移治理能力。",
+    "README 尚未说明 ADR Governance，无法反映 ADR 编号、状态和 superseded 链治理。",
+    "README 尚未说明 Session Quality，无法反映 Session Archive 的质量检查。",
+    "README 尚未说明 Legacy Migration Report，无法反映旧结构迁移进度。",
+    "README 尚未说明 Multi-Project Validation，无法反映跨项目统一统计能力。",
+    "README 最后更新时间落后于 `.ai` 核心记忆与 validation 派生数据约 2 天。",
+    "README 未解释当前记忆漂移治理面，难以说明 validation 与 memory health 的真实用途。"
+  ],
+  "adr_governance_status": "治理健康",
+  "adr_governance_issues": [],
+  "session_quality_status": "质量健康",
+  "session_quality_issues": [],
+  "legacy_migration_status": "迁移未完成",
+  "legacy_migration_progress": "Active 0 / Compatibility 4 / Legacy 1 / Safe To Remove 0",
+  "legacy_migration_classifications": {
+    "PROJECT_CONTEXT.md": "Compatibility",
+    "DECISIONS.md": "Compatibility",
+    "WORKLOG.md": "Legacy",
+    "HYPOTHESES.md": "Compatibility",
+    "metrics.md": "Compatibility"
+  },
+  "legacy_migration_issues": [
+    "WORKLOG.md 仍承载大量历史流水，尚未收敛为纯兼容层。",
+    "PROJECT_CONTEXT.md 已被 Charter 取代，但仍需保留兼容读取与初始化写入。",
+    "DECISIONS.md 仍作为兼容索引存在，新决策已迁移到 ADR-first。",
+    "metrics.md 仍保留兼容快照角色，真实指标已迁移到 derived/metrics.json。"
+  ],
+  "project_health": null,
   "roadmap_state": null,
   "source": "auto_collected_from_ai",
-  "updated_at": "2026-06-18T20:16:39"
+  "updated_at": null
 }
