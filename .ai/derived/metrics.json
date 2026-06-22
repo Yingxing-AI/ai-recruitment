@@ -4,8 +4,8 @@
   "migrated_at": "2026-06-20",
   "charter_present": true,
   "adr_count": 4,
-  "session_archive_count": 4,
-  "active_candidate_count": 4,
+  "session_archive_count": 5,
+  "active_candidate_count": 0,
   "memory_health_status": "需要收敛记忆漂移",
   "validation_snapshot_format": "beta.3",
   "legacy_retained": [

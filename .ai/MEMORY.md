@@ -40,3 +40,4 @@
 - 2026-06-18 12:00: 演示种子数据增加 10 条虚拟实例，覆盖多职位、多阶段和多种简历样本，便于现场演示和漏斗观察。
 - 2026-06-20 20:35: 项目记忆层迁移到 `Project Copilot v0.3.0-beta.3` 风格，新增 Charter、ADR、Session Archive 和 derived metrics 分层，旧文件保留为 Compatibility/Legacy，业务代码未修改。
 - 2026-06-20 20:45: 为避免误用系统 `pytest`，项目根目录新增 `Makefile`，统一使用 `make test` 和 `make lint-backend` 调用 `backend/.venv`。
+- 2026-06-22 19:58: 修复本地演示链路：后端启动增加数据库重试，Docker Compose 下前后端及依赖服务改为通过宿主机网关打通，`3000` 正式产品入口恢复可用。
