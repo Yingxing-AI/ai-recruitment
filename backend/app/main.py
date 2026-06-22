@@ -1,10 +1,38 @@
+import logging
+import time
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 
 from app.api.routes import ai, applications, audit, auth, candidates, dashboard, health, interviews, jobs, resumes
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
+
+logger = logging.getLogger(__name__)
+
+
+def wait_for_database_ready() -> None:
+    max_attempts = max(1, settings.database_startup_max_attempts)
+    delay_seconds = max(0.0, settings.database_startup_retry_delay_seconds)
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            with engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+            return
+        except OperationalError:
+            if attempt == max_attempts:
+                raise
+            logger.warning(
+                "Database is not ready on startup; retrying in %ss (%s/%s)",
+                delay_seconds,
+                attempt,
+                max_attempts,
+            )
+            time.sleep(delay_seconds)
 
 
 def create_app() -> FastAPI:
@@ -31,6 +59,7 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     def on_startup() -> None:
+        wait_for_database_ready()
         Base.metadata.create_all(bind=engine)
 
     return app

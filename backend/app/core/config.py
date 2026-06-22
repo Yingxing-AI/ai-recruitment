@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     secret_key: str = "change-me"
     access_token_expire_minutes: int = 60 * 8
     database_url: str = "sqlite:///./dev.db"
+    database_startup_max_attempts: int = 10
+    database_startup_retry_delay_seconds: float = 2.0
     redis_url: str = "redis://localhost:6379/0"
     upload_dir: str = "./uploads"
     storage_backend: str = "minio"

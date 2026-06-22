@@ -3,9 +3,9 @@
   "memory_architecture": "0.3.0-beta.3-compatible",
   "migrated_at": "2026-06-20",
   "charter_present": true,
-  "adr_count": 3,
+  "adr_count": 4,
   "session_archive_count": 4,
-  "active_candidate_count": 0,
+  "active_candidate_count": 4,
   "memory_health_status": "需要收敛记忆漂移",
   "validation_snapshot_format": "beta.3",
   "legacy_retained": [
@@ -16,7 +16,7 @@
     "metrics.md"
   ],
   "notes": [
-    "业务代码未修改。",
+    "业务代码已修改，当前重点是修复本地后端启动与演示链路。",
     "Git、Release、README 未在本次迁移中自动写入。",
     "2026-06-20 已通过 close_day 工作流验证 Session Archive 写入与 current.md 重置。"
   ]

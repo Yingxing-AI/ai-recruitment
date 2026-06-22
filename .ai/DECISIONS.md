@@ -7,6 +7,7 @@
 - [ADR 0001: MVP 使用规则驱动，不依赖外部 AI API](adr/0001-rule-driven-mvp.md)
 - [ADR 0002: Phase 4 聚焦 V1 产品化收口](adr/0002-phase-4-v1-productization.md)
 - [ADR 0003: 项目记忆层迁移到 Project Copilot v0.3.0-beta.3 架构](adr/0003-memory-architecture-migration-beta3.md)
+- [ADR 0004: Docker Compose 依赖服务走宿主机网关](adr/0004-docker-host-gateway-networking.md)
 
 ## Legacy 决策摘录
 
@@ -31,3 +32,11 @@
 原因：现有 `.ai` 仍停留在 beta.1 风格，缺少 `PROJECT_CHARTER`、`ADR`、`Session Archive` 和 `derived metrics` 分层，已影响上下文恢复与验证治理口径。
 
 影响：后续新决策优先写入 `.ai/adr/`；`WORKLOG.md`、`HYPOTHESES.md` 和 `metrics.md` 只保留为 Legacy/Compatibility，不再作为主写入面。
+
+日期：2026-06-22
+
+决策：Docker Compose 下的 `backend` / `worker` 默认通过宿主机网关访问 PostgreSQL、Redis 和 MinIO，并在应用启动阶段增加数据库重试。
+
+原因：当前环境中容器间 DNS 可解析但 TCP 不通，导致后端无法完成启动。
+
+影响：本地产品界面和演示数据链路恢复稳定；后续如容器桥接网络恢复正常，可再评估是否回退为服务名直连。

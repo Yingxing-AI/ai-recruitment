@@ -44,11 +44,11 @@ services:
       APP_NAME: ${APP_NAME:-AI Recruitment System}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://ai_recruitment:ai_recruitment@postgres:5432/ai_recruitment}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      DATABASE_URL: ${DOCKER_DATABASE_URL:-postgresql+psycopg://ai_recruitment:ai_recruitment@host.docker.internal:5432/ai_recruitment}
+      REDIS_URL: ${DOCKER_REDIS_URL:-redis://host.docker.internal:6379/0}
       UPLOAD_DIR: /app/uploads
       STORAGE_BACKEND: ${STORAGE_BACKEND:-minio}
-      MINIO_ENDPOINT_URL: ${MINIO_ENDPOINT_URL:-http://minio:9000}
+      MINIO_ENDPOINT_URL: ${DOCKER_MINIO_ENDPOINT_URL:-http://host.docker.internal:9000}
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
       MINIO_BUCKET: ${MINIO_BUCKET:-resumes}
@@ -67,6 +67,8 @@ services:
         condition: service_started
     ports:
       - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - backend_uploads:/app/uploads
 
@@ -80,11 +82,11 @@ services:
       APP_NAME: ${APP_NAME:-AI Recruitment System}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://ai_recruitment:ai_recruitment@postgres:5432/ai_recruitment}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      DATABASE_URL: ${DOCKER_DATABASE_URL:-postgresql+psycopg://ai_recruitment:ai_recruitment@host.docker.internal:5432/ai_recruitment}
+      REDIS_URL: ${DOCKER_REDIS_URL:-redis://host.docker.internal:6379/0}
       UPLOAD_DIR: /app/uploads
       STORAGE_BACKEND: ${STORAGE_BACKEND:-minio}
-      MINIO_ENDPOINT_URL: ${MINIO_ENDPOINT_URL:-http://minio:9000}
+      MINIO_ENDPOINT_URL: ${DOCKER_MINIO_ENDPOINT_URL:-http://host.docker.internal:9000}
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
       MINIO_BUCKET: ${MINIO_BUCKET:-resumes}
@@ -98,6 +100,8 @@ services:
       - backend
       - redis
       - minio
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - backend_uploads:/app/uploads
 
@@ -112,6 +116,8 @@ services:
       - backend
     ports:
       - "3000:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   postgres_data:
