@@ -31,7 +31,7 @@ export default function Jobs() {
   return (
     <>
       <div className="page-header">
-        <Typography.Title level={3}>职位管理</Typography.Title>
+        <Typography.Title level={3}>职位</Typography.Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>新建职位</Button>
       </div>
       <div className="panel">
@@ -50,7 +50,7 @@ export default function Jobs() {
               render: (_, record) => (
                 <Space>
                   <Button type="link" onClick={() => navigate(`/jobs/${record.id}`)}>详情</Button>
-                  <Button type="link" onClick={() => navigate('/ai-recruitment')}>匹配</Button>
+                  <Button type="link" onClick={() => navigate(`/jobs/${record.id}`)}>候选人匹配</Button>
                 </Space>
               )
             }

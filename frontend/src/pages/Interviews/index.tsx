@@ -37,7 +37,7 @@ export default function Interviews() {
   return (
     <>
       <div className="page-header">
-        <Typography.Title level={3}>面试管理</Typography.Title>
+        <Typography.Title level={3}>面试安排</Typography.Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>安排面试</Button>
       </div>
       <div className="panel">

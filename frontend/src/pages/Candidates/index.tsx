@@ -1,4 +1,4 @@
-import { ImportOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Form, Input, InputNumber, Modal, Space, Table, Tag, Typography, message } from 'antd';
 import { useState } from 'react';
@@ -24,11 +24,8 @@ export default function Candidates() {
   return (
     <>
       <div className="page-header">
-        <Typography.Title level={3}>候选人管理</Typography.Title>
-        <Space>
-          <Button icon={<ImportOutlined />} onClick={() => navigate('/resume-import')}>导入简历</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>新建候选人</Button>
-        </Space>
+        <Typography.Title level={3}>候选人</Typography.Title>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>新建候选人</Button>
       </div>
       <div className="panel">
         <Table
@@ -47,7 +44,7 @@ export default function Candidates() {
               render: (_, record) => (
                 <Space>
                   <Button type="link" onClick={() => navigate(`/candidates/${record.id}`)}>详情</Button>
-                  <Button type="link" onClick={() => navigate('/ai-recruitment')}>AI 分析</Button>
+                  <Button type="link" onClick={() => navigate(`/candidates/${record.id}`)}>简历与 AI</Button>
                 </Space>
               )
             }

@@ -4,7 +4,7 @@
   "migrated_at": "2026-06-20",
   "charter_present": true,
   "adr_count": 4,
-  "session_archive_count": 6,
+  "session_archive_count": 7,
   "active_candidate_count": 0,
   "memory_health_status": "需要收敛记忆漂移",
   "validation_snapshot_format": "beta.3",
@@ -20,6 +20,7 @@
     "Git、Release、README 未在本次迁移中自动写入。",
     "2026-06-20 已通过 close_day 工作流验证 Session Archive 写入与 current.md 重置。",
     "2026-06-23 已完成 Vite 3001 与 Docker 3000 的端口区分，并补齐默认 CORS。",
-    "2026-06-23 已恢复 Docker 正式入口，但 worker 容器命名漂移仍待后续治理。"
+    "2026-06-23 已恢复 Docker 正式入口，但 worker 容器命名漂移仍待后续治理。",
+    "2026-06-23 已把前端主导航收口为招聘业务流程式结构，并将简历与 AI 操作迁入详情工作台。"
   ]
 }
