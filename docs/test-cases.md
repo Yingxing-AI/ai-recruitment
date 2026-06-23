@@ -8,7 +8,8 @@
 
 - 服务已通过 `docker compose up --build -d` 启动。
 - 已执行演示数据种子脚本。
-- 前端访问 `http://localhost:3000`，后端访问 `http://localhost:8000`。
+- Docker 前端访问 `http://localhost:3000`，后端访问 `http://localhost:8000`。
+- 如需本地调试前端，Vite 开发服务器访问 `http://localhost:3001`。
 
 ## 用例
 

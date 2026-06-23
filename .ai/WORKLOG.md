@@ -136,3 +136,9 @@
 - 完成内容：将 `.ai` 记忆层从 beta.1 风格迁移到 `Project Copilot v0.3.0-beta.3` 风格，新增 `PROJECT_CHARTER.md`、`adr/`、`sessions/` 和 `derived/metrics.json`，并更新 `AGENTS.md` 与 `docs/CODEX_WORKFLOW.md` 为 Session Memory 规则。
 - 遇到问题：旧 `.ai/STATUS.md` 存在明显上下文漂移，需要在迁移中同时收敛为招聘项目自身的真实恢复卡片；旧 `WORKLOG.md` 与 `history/` 是流水账，不能直接机械复制到 Session Archive。
 - 明日计划：后续开发时只读恢复上下文，收工时仅把三个月后仍重要的候选事件写入长期记忆。
+
+## 2026-06-23 收工
+
+- 完成内容：收口本地前端开发链路，Vite 端口调整为 `3001`，同步修正默认 CORS、README、部署文档与验收文档；重新拉起 Docker Compose 并验证 `3000` 前端与 `8000` 健康检查恢复可用。
+- 遇到问题：`worker` 容器存在历史替换残留导致的异常命名；尝试单独重建时，Docker daemon 对停止旧容器返回 `permission denied`。
+- 明日计划：若继续做环境治理，优先解决 Docker stop/remove 权限问题，再重建 `worker` 清理命名漂移。

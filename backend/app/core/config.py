@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     minio_secret_key: str = "minioadmin"
     minio_bucket: str = "resumes"
     minio_secure: bool = False
-    backend_cors_origins: str = "http://localhost:3000"
+    backend_cors_origins: str = "http://localhost:3000,http://localhost:3001"
     llm_provider: str = "mock"
     llm_model: str = "mock-recruitment"
     llm_api_key: str | None = None

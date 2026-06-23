@@ -44,7 +44,7 @@ docker compose exec backend python -m app.scripts.seed_data
 
 访问地址：
 
-- 前端：http://localhost:3000
+- Docker 前端：http://localhost:3000
 - 后端 API：http://localhost:8000
 - API 文档：http://localhost:8000/docs
 - MinIO 控制台：http://localhost:9001
@@ -57,6 +57,15 @@ docker compose exec backend python -m app.scripts.seed_data
 cd frontend
 npm run build
 ```
+
+前端本地开发：
+
+```bash
+cd frontend
+npm run dev
+```
+
+本地 Vite 开发服务器默认使用 `http://localhost:3001`，避免与 Docker 前端 `3000` 端口冲突。
 
 后端代码检查：
 

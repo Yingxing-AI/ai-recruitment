@@ -6,9 +6,10 @@
 
 ## 标准端口
 
-- 前端：`http://localhost:3000`
+- Docker 前端：`http://localhost:3000`
 - 后端：`http://localhost:8000`
 - API 文档：`http://localhost:8000/docs`
+- 本地 Vite 开发：`http://localhost:3001`
 
 ## 环境准备
 
@@ -50,6 +51,7 @@ docker compose logs -f frontend
 
 ## 常见问题
 
-- 如果前端无法打开，先确认 `3000` 端口未被其他服务占用。
+- 如果 Docker 前端无法打开，先确认 `3000` 端口未被其他服务占用。
+- 如果需要本地启动前端开发服务器，使用 `cd frontend && npm run dev`，默认访问 `3001`，避免和 Docker 前端端口冲突。
 - 如果后端连不上数据库，检查 `.env` 中的数据库连接串和容器健康状态。
 - 如果需要重建演示数据，可重复执行 seed 命令，脚本保持幂等。
